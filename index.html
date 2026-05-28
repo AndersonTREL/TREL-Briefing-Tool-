@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tree Logistics — Shift Briefing Hub</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f4f6f4;color:#1a2a1a;min-height:100vh;}
+.app{max-width:800px;margin:0 auto;padding:0 16px 40px;}
+
+/* HEADER */
+.header{padding:14px 0 12px;border-bottom:2.5px solid #2d7a2d;margin-bottom:0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:#fff;margin:0 -16px;padding:14px 16px 12px;}
+.logo-svg{height:42px;width:auto;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.shift-badge{font-size:12px;padding:4px 12px;border-radius:20px;font-weight:700;letter-spacing:.02em;}
+.shift-badge.am{background:#e8f0fb;color:#2a5aa0;border:1px solid #b0c8f0;}
+.shift-badge.pm{background:#fef3e0;color:#a06020;border:1px solid #f0d090;}
+.shift-badge.night{background:#f0eafe;color:#6040a0;border:1px solid #d0b8f8;}
+.clock{font-size:13px;color:#888;font-weight:600;}
+
+/* TABS */
+.tab-wrap{background:#fff;border-bottom:2px solid #e0e8e0;margin:0 -16px;padding:0 16px;overflow-x:auto;display:flex;}
+.tab-btn{background:transparent;border:none;padding:12px 14px;font-size:12px;font-weight:600;color:#999;cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;letter-spacing:.03em;text-transform:uppercase;transition:all .15s;}
+.tab-btn.active{color:#2d7a2d;border-bottom:2.5px solid #2d7a2d;}
+.tab-btn:hover{color:#2d7a2d;}
+.sec{display:none;padding-top:20px;}.sec.active{display:block;}
+
+/* CARDS */
+.card{background:#fff;border:1px solid #e0e8e0;border-radius:10px;padding:16px 20px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.card.green{border-color:#b0d8b0;background:#f8fbf8;}
+.card.warn{border-color:#f0d080;background:#fefaf0;}
+.card.red{border-color:#f0b0b0;background:#fef5f5;}
+
+/* METRICS */
+.metric-grid{display:grid;gap:8px;}
+.metric-grid.c4{grid-template-columns:repeat(4,1fr);}
+.metric-grid.c5{grid-template-columns:repeat(5,1fr);}
+.metric-grid.c3{grid-template-columns:repeat(3,1fr);}
+.metric-grid.c2{grid-template-columns:repeat(2,1fr);}
+.metric{background:#f8faf8;border:1px solid #e0e8e0;border-radius:8px;padding:10px 8px;text-align:center;}
+.metric .label{font-size:11px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+.metric .value{font-size:20px;font-weight:800;color:#1a2a1a;line-height:1.1;}
+.metric .sub{font-size:10px;color:#aaa;margin-top:2px;}
+.metric.green-bg{background:#e8f5e8;border-color:#b0d8b0;}
+.metric.green-bg .value{color:#2d7a2d;}
+
+/* FORM ELEMENTS */
+.form-row{display:grid;gap:10px;margin-bottom:14px;}
+.form-row.c2{grid-template-columns:1fr 1fr;}
+.form-row.c3{grid-template-columns:repeat(3,1fr);}
+.form-label{font-size:12px;color:#666;font-weight:600;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+input[type=text],input[type=number],input[type=time],select{
+  background:#fff;border:1.5px solid #d0d8d0;border-radius:8px;
+  color:#1a2a1a;padding:0 12px;height:40px;font-size:14px;width:100%;
+  font-weight:500;transition:border-color .15s;
+}
+input:focus,select:focus{outline:none;border-color:#2d7a2d;box-shadow:0 0 0 3px rgba(45,122,45,.1);}
+
+/* BUTTONS */
+.btn{background:#fff;border:1.5px solid #d0d8d0;border-radius:8px;color:#1a2a1a;padding:8px 16px;font-size:13px;cursor:pointer;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{border-color:#2d7a2d;color:#2d7a2d;}
+.btn.primary{background:#2d7a2d;color:#fff;border-color:#2d7a2d;}
+.btn.primary:hover{background:#236023;border-color:#236023;}
+.btn.active-green{background:#2d7a2d;color:#fff;border-color:#2d7a2d;}
+.btn.danger{color:#c03030;border-color:#f0b0b0;}
+.btn.danger:hover{background:#fef5f5;border-color:#c03030;}
+.btn-full{width:100%;justify-content:center;padding:12px;font-size:14px;}
+
+/* ALERTS */
+.alert{font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:12px;border:1px solid;font-weight:500;}
+.alert.info{background:#e8f0fb;color:#2a5aa0;border-color:#b0c8f0;}
+.alert.warn{background:#fef9e8;color:#a07010;border-color:#f0d880;}
+.alert.err{background:#fef0f0;color:#c03030;border-color:#f0b0b0;}
+.alert.ok{background:#e8f5e8;color:#2d7a2d;border-color:#b0d8b0;}
+
+/* SECTION TITLE */
+.sec-title{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;margin-top:16px;}
+.sec-title:first-child{margin-top:0;}
+
+/* DROP ZONE */
+.drop-zone{border:2px dashed #b0d0b0;border-radius:10px;padding:24px 16px;text-align:center;cursor:pointer;color:#888;font-size:13px;font-weight:500;background:#fafcfa;transition:all .15s;}
+.drop-zone:hover,.drop-zone.drag{border-color:#2d7a2d;background:#f0f8f0;color:#2d7a2d;}
+
+/* DRIVER ROWS */
+.driver-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f4f0;}
+.driver-row:last-child{border-bottom:none;}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+
+/* DRIVER CARDS */
+.dcard{background:#fff;border:1.5px solid #e0e8e0;border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.dcard.warn{border-color:#f0d080;}
+.dcard.r2{border-color:#2d7a2d;background:#fafcfa;}
+.dcard-header{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.dcard-name{font-size:15px;font-weight:700;color:#1a2a1a;}
+.dcard-sub{font-size:12px;color:#888;margin-top:1px;}
+.dcard-panel{background:#f5fbf5;border:1px solid #d0e8d0;border-radius:8px;padding:10px 12px;}
+
+/* ZONE PILLS */
+.zone-pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:5px 10px;border-radius:20px;cursor:pointer;border:1.5px solid #d0d8d0;background:#f8f8f8;color:#888;margin:2px;font-weight:600;transition:all .15s;}
+.zone-pill:hover{border-color:#2d7a2d;color:#2d7a2d;background:#f0f8f0;}
+.zone-pill.sel{background:#e8f5e8;border-color:#2d7a2d;color:#2d7a2d;}
+.zone-pill.other{opacity:.3;cursor:not-allowed;}
+
+/* PRIORITY PILLS */
+.prio-pill{display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px solid #d0d8d0;border-radius:8px;cursor:pointer;background:#fff;transition:all .15s;min-width:150px;}
+.prio-pill:hover{border-color:#2d7a2d;background:#f5fbf5;}
+.prio-pill.sel{border-color:#2d7a2d;background:#e8f5e8;}
+.check-box{width:18px;height:18px;border-radius:4px;border:2px solid #d0d8d0;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;transition:all .15s;}
+.check-box.checked{background:#2d7a2d;border-color:#2d7a2d;color:#fff;}
+
+/* BADGES */
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;vertical-align:middle;}
+.badge.prio{background:#e8f0fb;color:#2a5aa0;}
+.badge.bike{background:#e8f5e8;color:#2d7a2d;}
+.badge.r2{background:#e8f5e8;color:#2d7a2d;}
+.badge.am{background:#e8f0fb;color:#2a5aa0;}
+.badge.pm{background:#fef3e0;color:#a06020;}
+.badge.night{background:#f0eafe;color:#6040a0;}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{padding:8px 10px;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #e8ede8;text-align:left;}
+th.right{text-align:center;}
+td{padding:6px 10px;border-bottom:1px solid #f0f4f0;color:#333;font-weight:500;}
+td.center{text-align:center;}
+td input{height:32px;font-size:12px;padding:0 6px;border-radius:6px;}
+tr:last-child td{border-bottom:none;}
+
+/* TASK ROWS */
+.task-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f4f0;font-size:13px;}
+.task-row:last-child{border-bottom:none;}
+.task-num{font-size:13px;font-weight:700;}
+.task-num.high{color:#c03030;}
+.task-num.normal{color:#888;}
+
+/* PROGRESS BAR */
+.pct-bar{height:5px;background:#e8ede8;border-radius:3px;margin-top:4px;}
+.pct-fill{height:5px;border-radius:3px;}
+
+/* MESSAGE BOX */
+.msg-box{font-family:'Courier New',monospace;font-size:12px;white-space:pre-wrap;line-height:1.7;color:#333;background:#f8faf8;border-radius:8px;padding:14px;border:1px solid #e0e8e0;word-break:break-word;}
+
+/* HISTORY */
+.hist-item{border-bottom:1px solid #f0f4f0;padding:12px 0;}
+.hist-item:last-child{border-bottom:none;}
+
+/* HUB BUTTONS */
+.hub-btn{padding:8px 20px;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;border:2px solid #d0d8d0;background:#fff;color:#888;transition:all .15s;margin-right:8px;}
+.hub-btn.active{background:#2d7a2d;border-color:#2d7a2d;color:#fff;}
+
+/* DIVIDER */
+hr{border:none;border-top:1px solid #e8ede8;margin:14px 0;}
+
+/* VERSION */
+.version-bar{font-size:11px;color:#ccc;padding:20px 0 8px;text-align:center;}
+
+@media(max-width:520px){
+  .metric-grid.c4{grid-template-columns:repeat(2,1fr);}
+  .metric-grid.c5{grid-template-columns:repeat(3,1fr);}
+  .form-row.c2{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<div class="header">
+  <svg class="logo-svg" viewBox="0 0 240 64" xmlns="http://www.w3.org/2000/svg">
+    <!-- Heart shape made of two leaves -->
+    <g transform="translate(4,4)">
+      <!-- Dark green left leaf -->
+      <path d="M28 10 C20 2, 2 4, 2 20 C2 34, 16 46, 28 54 C28 38, 28 10, 28 10Z" fill="#1a6b1a"/>
+      <!-- Light green right leaf -->
+      <path d="M28 10 C36 2, 54 4, 54 20 C54 34, 40 46, 28 54 C28 38, 28 10, 28 10Z" fill="#5cb85c"/>
+      <!-- Inner light highlight -->
+      <path d="M28 16 C32 10, 46 12, 46 22 C46 32, 36 42, 28 50 C28 38, 28 16, 28 16Z" fill="#7dd87d" opacity=".5"/>
+    </g>
+    <!-- TREE LOGISTICS text -->
+    <text x="70" y="28" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="18" font-weight="800" fill="#1a6b1a" letter-spacing=".5">TREE LOGISTICS</text>
+    <!-- SUSTAINABLE LAST MILE -->
+    <text x="70" y="46" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11" font-weight="600" fill="#5cb85c" letter-spacing="1.5">SUSTAINABLE LAST MILE</text>
+    <!-- Shift Briefing Hub -->
+    <text x="70" y="60" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="10" font-weight="500" fill="#999" letter-spacing=".5">Shift Briefing Hub · Berlin · v3.1</text>
+  </svg>
+  <div class="header-right">
+    <span id="shiftBadge" class="shift-badge night">Night Shift</span>
+    <span id="clockEl" class="clock"></span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tab-wrap">
+  <button class="tab-btn active" onclick="showTab('setup',this)">⚙ Setup</button>
+  <button class="tab-btn" onclick="showTab('stock',this)">⚡ Stock</button>
+  <button class="tab-btn" onclick="showTab('assign',this)">✓ Zones</button>
+  <button class="tab-btn" onclick="showTab('briefing',this)">▶ Briefing</button>
+  <button class="tab-btn" onclick="showTab('round2',this)">↺ Round 2</button>
+  <button class="tab-btn" onclick="showTab('history',this)">◀ History</button>
+</div>
+
+<!-- ═══════════════ SETUP TAB ═══════════════ -->
+<div id="tab-setup" class="sec active">
+
+  <div class="form-row c2">
+    <div><label class="form-label">Shift</label>
+      <select id="s-shift" onchange="persist();updateShiftBadge();">
+        <option>AM Shift</option><option>PM Shift</option><option selected>Night Shift</option>
+      </select>
+    </div>
+    <div><label class="form-label">Max batteries / driver</label>
+      <input type="number" id="s-max" value="40" min="4" step="4" oninput="persist()">
+    </div>
+  </div>
+
+  <div class="sec-title">Drivers on shift</div>
+  <div class="card" style="padding:12px 16px;">
+    <div id="driverList"></div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <input type="text" id="newDriverName" placeholder="Driver name" style="flex:1;" onkeydown="if(event.key==='Enter')addDriver()">
+      <button class="btn" onclick="addDriver()" style="white-space:nowrap;">+ Add</button>
+    </div>
+  </div>
+
+  <div class="sec-title">Upload Steep report</div>
+  <div class="drop-zone" id="dropZone" onclick="document.getElementById('pdfInput').click()">
+    ↑ Upload both Steep PDFs (Scooters + Bikes)<br>
+    <span style="font-size:11px;color:#bbb;">drag &amp; drop or click · select both files at once</span>
+    <input type="file" id="pdfInput" accept=".pdf" multiple style="display:none;" onchange="handleFiles(this.files)">
+  </div>
+  <div id="parseStatus" style="font-size:12px;color:#888;margin-top:6px;min-height:16px;font-weight:500;"></div>
+
+  <div id="downtimePanel" style="display:none;">
+    <div class="sec-title">Live downtime</div>
+    <div id="downtimeMetrics" class="metric-grid c4"></div>
+    <div id="priorityOrderDisplay" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="sec-title">Swap tasks per zone</div>
+  <div id="globalMetrics" class="metric-grid c4" style="margin-bottom:12px;"></div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="overflow-x:auto;">
+      <table id="zoneTable">
+        <thead><tr>
+          <th>Zone</th>
+          <th class="right" style="color:#2a5aa0;">V4</th>
+          <th class="right" style="color:#2a5aa0;">V9</th>
+          <th class="right" style="color:#2d7a2d;">E5</th>
+          <th class="right" style="color:#2d7a2d;">EL2</th>
+          <th class="right">Rescue</th>
+          <th class="right">Rebal.</th>
+          <th class="right">Total</th>
+        </tr></thead>
+        <tbody id="zoneTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="sec-title">Shift priority — select task focus</div>
+  <div class="card" style="padding:14px 16px;">
+    <div style="font-size:12px;color:#888;margin-bottom:10px;">Select what drivers focus on this shift. Battery allocation follows your selection.</div>
+    <div id="prioritySelector" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    <div id="prioritySelectorNote" style="font-size:12px;margin-top:8px;"></div>
+  </div>
+
+  <button class="btn primary btn-full" onclick="showTab('stock',document.querySelectorAll('.tab-btn')[1])">Next: hub stock →</button>
+</div>
+
+<!-- ═══════════════ STOCK TAB ═══════════════ -->
+<div id="tab-stock" class="sec">
+
+  <div class="sec-title">Hub status</div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#1a2a1a;" id="hubStatusTitle">Hub is full</div>
+        <div style="font-size:12px;color:#888;" id="hubStatusSub">All charger slots assumed ready</div>
+      </div>
+      <div>
+        <button class="hub-btn active" id="hubBtnFull" onclick="setHubFull(true)">✓ Full hub</button>
+        <button class="hub-btn" id="hubBtnAdjust" onclick="setHubFull(false)">Adjust</button>
+      </div>
+    </div>
+    <div class="metric-grid c4" id="hubReadyMetrics"></div>
+  </div>
+
+  <div class="sec-title">Charging started at <span style="font-size:11px;color:#bbb;font-weight:400;text-transform:none;letter-spacing:0;">(optional — improves Round 2 stock prediction)</span></div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+    <input type="time" id="chargeStartTime" style="width:150px;">
+    <button class="btn" onclick="setChargeTimeNow()">Set to now</button>
+    <span id="chargeTimeStatus" style="font-size:12px;color:#2d7a2d;font-weight:600;"></span>
+  </div>
+
+  <div class="sec-title">Battery inventory &amp; charger capacity <span style="font-size:11px;color:#bbb;font-weight:400;text-transform:none;letter-spacing:0;">(set once)</span></div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <table>
+      <thead><tr>
+        <th>Type</th>
+        <th class="right">Total batteries</th>
+        <th class="right">Charger slots</th>
+        <th class="right">Charge time (h)</th>
+      </tr></thead>
+      <tbody id="inventoryRows"></tbody>
+    </table>
+  </div>
+
+  <div class="sec-title">Ready now — auto calculated</div>
+  <div class="metric-grid c4" id="stockReadyPanel"></div>
+  <div style="font-size:11px;color:#bbb;margin-top:6px;font-weight:500;">Based on shift start time and charge cycle. Updates live.</div>
+
+  <button class="btn primary btn-full" style="margin-top:16px;" onclick="showTab('assign',document.querySelectorAll('.tab-btn')[2])">Next: assign zones →</button>
+</div>
+
+<!-- ═══════════════ ASSIGN TAB ═══════════════ -->
+<div id="tab-assign" class="sec">
+  <div id="assignContent"></div>
+  <button class="btn primary btn-full" onclick="showTab('briefing',document.querySelectorAll('.tab-btn')[3])">Generate briefing →</button>
+</div>
+
+<!-- ═══════════════ BRIEFING TAB ═══════════════ -->
+<div id="tab-briefing" class="sec">
+  <div id="briefingContent"></div>
+</div>
+
+<!-- ═══════════════ ROUND 2 TAB ═══════════════ -->
+<div id="tab-round2" class="sec">
+  <div id="round2Content"></div>
+</div>
+
+<!-- ═══════════════ HISTORY TAB ═══════════════ -->
+<div id="tab-history" class="sec">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <span style="font-size:13px;color:#888;font-weight:600;" id="histCount">No briefings saved</span>
+    <button class="btn danger" onclick="clearHist()" style="font-size:12px;">Clear all</button>
+  </div>
+  <div id="histList"></div>
+</div>
+
+<div class="version-bar">TREL Briefing Hub v3.1 · Tree Logistics GmbH · Berlin</div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+var SK='trel_v30';
+var ZONES=['Am Friedrichshain','Britz','Hellersdorf','Neukölln','Ostbahnhof','Rummelsburg','Treptow'];
+var AVCOL=[
+  ['#e8f0fb','#2a5aa0'],['#e8f5e8','#2d7a2d'],['#fef3e0','#a06020'],
+  ['#f0eafe','#6040a0'],['#fef0f0','#c03030'],['#f0f8f0','#1a6b1a'],['#fef9e8','#a07010']
+];
+var TYPES=['v4','v9','e5','el2'];
+var DOWNTIME_THRESHOLD=5.0;
+
+var DEFAULT_INVENTORY={
+  v4:{total:215,chargers:60,chargeH:6,label:'V4',isPrio:true,isBike:false},
+  v9:{total:280,chargers:80,chargeH:6,label:'V9',isPrio:true,isBike:false},
+  e5:{total:62,chargers:12,chargeH:6,label:'E5',isPrio:false,isBike:true},
+  el2:{total:62,chargers:12,chargeH:6,label:'EL2',isPrio:false,isBike:true}
+};
+
+var PRIO_OPTIONS=[
+  {id:'v4_swap',label:'V4 Battery swap',type:'v4',bat:true},
+  {id:'v9_swap',label:'V9 Battery swap',type:'v9',bat:true},
+  {id:'e5_swap',label:'E5 Battery swap',type:'e5',bat:true},
+  {id:'el2_swap',label:'EL2 Battery swap',type:'el2',bat:true},
+  {id:'rescue',label:'Rescue',type:'rescue',bat:false},
+  {id:'rebalance',label:'Rebalance',type:'rebalance',bat:false},
+  {id:'ifqc',label:'IFQC',type:'ifqc',bat:false},
+  {id:'deploy',label:'Deploy',type:'deploy',bat:false}
+];
+
+var S={
+  drivers:[],nextId:1,assign:{},
+  zoneTasks:{},
+  inventory:JSON.parse(JSON.stringify(DEFAULT_INVENTORY)),
+  global:{v4:0,v9:0,e5:0,el2:0,v4dt:0,v9dt:0,e5dt:0,el2dt:0},
+  shift:'Night Shift',maxBat:40,
+  shiftStartTs:null,round1Ts:null,round1Loads:{},
+  hubFull:true,
+  selectedPrios:[],  // resets each shift — intentionally not persisted
+  ready:false
+};
+ZONES.forEach(function(z){S.zoneTasks[z]={v4:0,v9:0,e5:0,el2:0,rescue:0,rebalance:0};});
+
+// ──────────── STATE ────────────
+function loadState(){
+  try{
+    var saved=JSON.parse(localStorage.getItem(SK+'_state')||'null');
+    if(!saved){
+      // try legacy keys
+      var leg=['trel_v20_state','trel_v11_state','trel_v1_state'];
+      for(var i=0;i<leg.length;i++){
+        var l=JSON.parse(localStorage.getItem(leg[i])||'null');
+        if(l&&l.drivers&&l.drivers.length){saved=l;break;}
+      }
+    }
+    if(!saved)return;
+    S.drivers=saved.drivers||[];
+    S.nextId=saved.nextId||S.drivers.length+1;
+    S.assign=saved.assign||{};
+    S.shift=saved.shift||'Night Shift';
+    S.maxBat=saved.maxBat||40;
+    S.ready=saved.ready||false;
+    S.shiftStartTs=saved.shiftStartTs||null;
+    S.round1Ts=saved.round1Ts||null;
+    S.round1Loads=saved.round1Loads||{};
+    S.hubFull=saved.hubFull!==undefined?saved.hubFull:true;
+    if(saved.inventory)S.inventory=saved.inventory;
+    if(saved.zoneTasks)ZONES.forEach(function(z){S.zoneTasks[z]=saved.zoneTasks[z]||{v4:0,v9:0,e5:0,el2:0,rescue:0,rebalance:0};});
+    S.global=saved.global||{v4:0,v9:0,e5:0,el2:0,v4dt:0,v9dt:0,e5dt:0,el2dt:0};
+    // selectedPrios intentionally NOT loaded — resets each shift
+  }catch(e){console.error('loadState',e);}
+}
+
+function persist(){
+  var shiftEl=document.getElementById('s-shift');
+  var maxEl=document.getElementById('s-max');
+  if(shiftEl)S.shift=shiftEl.value;
+  if(maxEl)S.maxBat=parseInt(maxEl.value)||40;
+  readInventoryFromUI();
+  try{localStorage.setItem(SK+'_state',JSON.stringify({
+    drivers:S.drivers,nextId:S.nextId,assign:S.assign,
+    inventory:S.inventory,shift:S.shift,maxBat:S.maxBat,
+    ready:S.ready,zoneTasks:S.zoneTasks,
+    global:S.global,shiftStartTs:S.shiftStartTs,
+    round1Ts:S.round1Ts,round1Loads:S.round1Loads,hubFull:S.hubFull
+  }));}catch(e){}
+}
+
+function readInventoryFromUI(){
+  TYPES.forEach(function(t){
+    var tot=document.getElementById('inv-total-'+t);
+    var chr=document.getElementById('inv-chargers-'+t);
+    var chh=document.getElementById('inv-chargeh-'+t);
+    if(tot)S.inventory[t].total=parseInt(tot.value)||0;
+    if(chr)S.inventory[t].chargers=parseInt(chr.value)||0;
+    if(chh)S.inventory[t].chargeH=parseFloat(chh.value)||6;
+  });
+}
+
+function applyStateToUI(){
+  var shiftEl=document.getElementById('s-shift');
+  if(shiftEl)Array.from(shiftEl.options).forEach(function(o){if(o.text===S.shift)o.selected=true;});
+  var maxEl=document.getElementById('s-max');
+  if(maxEl)maxEl.value=S.maxBat;
+  updateShiftBadge();
+  applyChargeTimeToUI();
+}
+
+function updateShiftBadge(){
+  var el=document.getElementById('shiftBadge');if(!el)return;
+  var shift=document.getElementById('s-shift')?document.getElementById('s-shift').value:S.shift;
+  el.className='shift-badge '+(shift.includes('AM')?'am':shift.includes('PM')?'pm':'night');
+  el.textContent=shift;
+}
+
+function startClock(){
+  function tick(){var el=document.getElementById('clockEl');if(el)el.textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}
+  tick();setInterval(tick,30000);
+}
+
+function showTab(name,btn){
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('active');});
+  document.getElementById('tab-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(name==='setup'){renderZoneTable();renderGlobalMetrics();renderDowntimePanel();renderPrioritySelector();}
+  if(name==='stock'){renderInventoryRows();renderHubStatusCard();renderStockReady();}
+  if(name==='assign')renderAssign();
+  if(name==='briefing')renderBriefing();
+  if(name==='round2')renderRound2();
+  if(name==='history')renderHistory();
+}
+
+// ──────────── DRIVERS ────────────
+function renderDriverList(){
+  var el=document.getElementById('driverList');if(!el)return;
+  if(!S.drivers.length){el.innerHTML='<div style="font-size:13px;color:#bbb;padding:6px 0;">No drivers added yet.</div>';return;}
+  var html='';
+  S.drivers.forEach(function(d,i){
+    var bg=AVCOL[i%AVCOL.length][0],fg=AVCOL[i%AVCOL.length][1];
+    var ini=d.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+    html+='<div class="driver-row">'
+      +'<div class="avatar" style="background:'+bg+';color:'+fg+';">'+ini+'</div>'
+      +'<input type="text" value="'+esc(d.name)+'" style="flex:1;font-size:14px;" onchange="renameDriver('+d.id+',this.value)">'
+      +'<button class="btn danger" onclick="removeDriver('+d.id+')" style="padding:6px 10px;font-size:12px;">✕</button>'
+      +'</div>';
+  });
+  el.innerHTML=html;
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function addDriver(){
+  var inp=document.getElementById('newDriverName');
+  var name=inp.value.trim();if(!name)return;
+  S.drivers.push({id:S.nextId++,name:name});
+  inp.value='';persist();renderDriverList();
+}
+function removeDriver(id){
+  S.drivers=S.drivers.filter(function(d){return d.id!==id;});
+  Object.keys(S.assign).forEach(function(z){if(S.assign[z]===id)delete S.assign[z];});
+  persist();renderDriverList();
+}
+function renameDriver(id,name){var d=S.drivers.find(function(d){return d.id===id;});if(d){d.name=name;persist();}}
+
+// ──────────── ZONE TABLE ────────────
+function renderZoneTable(){
+  var tbody=document.getElementById('zoneTableBody');if(!tbody)return;
+  var html='';
+  ZONES.forEach(function(z){
+    var zk=z.replace(/\s/g,'_');
+    var zt=S.zoneTasks[z]||{v4:0,v9:0,e5:0,el2:0,rescue:0,rebalance:0};
+    var tot=(zt.v4||0)+(zt.v9||0)+(zt.e5||0)+(zt.el2||0)+(zt.rescue||0)+(zt.rebalance||0);
+    html+='<tr>';
+    html+='<td style="font-weight:600;white-space:nowrap;">'+esc(z)+'</td>';
+    ['v4','v9','e5','el2','rescue','rebalance'].forEach(function(t){
+      html+='<td class="center"><input type="number" id="zt-'+zk+'-'+t+'" value="'+(zt[t]||0)+'" min="0" style="width:52px;" oninput="updateZoneTask(\''+z+'\',\''+t+'\',this.value)"></td>';
+    });
+    html+='<td class="center" style="font-weight:700;color:#2d7a2d;" id="ztot-'+zk+'">'+tot+'</td>';
+    html+='</tr>';
+  });
+  // totals row
+  html+='<tr style="background:#f8faf8;">';
+  html+='<td style="font-weight:700;font-size:11px;color:#888;text-transform:uppercase;">Total</td>';
+  ['v4','v9','e5','el2','rescue','rebalance'].forEach(function(t){
+    html+='<td class="center" style="font-weight:700;" id="gcol-'+t+'">'+( ZONES.reduce(function(s,z){return s+(S.zoneTasks[z][t]||0);},0))+'</td>';
+  });
+  html+='<td class="center" style="font-weight:700;color:#2d7a2d;" id="gcol-all">'+getTotalTasks()+'</td>';
+  html+='</tr>';
+  tbody.innerHTML=html;
+}
+
+function getTotalTasks(){
+  return ZONES.reduce(function(s,z){
+    var zt=S.zoneTasks[z]||{};
+    return s+(zt.v4||0)+(zt.v9||0)+(zt.e5||0)+(zt.el2||0)+(zt.rescue||0)+(zt.rebalance||0);
+  },0);
+}
+
+function updateZoneTask(zone,type,val){
+  if(!S.zoneTasks[zone])S.zoneTasks[zone]={v4:0,v9:0,e5:0,el2:0,rescue:0,rebalance:0};
+  S.zoneTasks[zone][type]=parseInt(val)||0;
+  TYPES.forEach(function(t){S.global[t]=ZONES.reduce(function(s,z){return s+(S.zoneTasks[z][t]||0);},0);});
+  S.ready=true;
+  var zk=zone.replace(/\s/g,'_');
+  var zt=S.zoneTasks[zone];
+  var tot=(zt.v4||0)+(zt.v9||0)+(zt.e5||0)+(zt.el2||0)+(zt.rescue||0)+(zt.rebalance||0);
+  var ztEl=document.getElementById('ztot-'+zk);if(ztEl)ztEl.textContent=tot;
+  ['v4','v9','e5','el2','rescue','rebalance'].forEach(function(t){
+    var el=document.getElementById('gcol-'+t);
+    if(el)el.textContent=ZONES.reduce(function(s,z){return s+(S.zoneTasks[z][t]||0);},0);
+  });
+  var ga=document.getElementById('gcol-all');if(ga)ga.textContent=getTotalTasks();
+  renderGlobalMetrics();renderDowntimePanel();renderPrioritySelector();persist();
+}
+
+function renderGlobalMetrics(){
+  var el=document.getElementById('globalMetrics');if(!el)return;
+  var g=S.global;
+  var html='';
+  TYPES.forEach(function(k){
+    var dt=g[k+'dt']||0;
+    var dtColor=dt>DOWNTIME_THRESHOLD?'#c03030':dt>3?'#a07010':'#2d7a2d';
+    html+='<div class="metric'+(dt>DOWNTIME_THRESHOLD?' red':'')+'">';
+    html+='<div class="label">'+k.toUpperCase()+' swaps</div>';
+    html+='<div class="value">'+(g[k]||0)+'</div>';
+    html+='<div class="sub" style="color:'+dtColor+';">'+(dt?dt.toFixed(1)+'% down':'')+'</div>';
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+
+function renderDowntimePanel(){
+  var panel=document.getElementById('downtimePanel');if(!panel)return;
+  var g=S.global;
+  var hasData=g.v4dt||g.v9dt||g.e5dt||g.el2dt;
+  if(!hasData){panel.style.display='none';return;}
+  panel.style.display='block';
+  var html='';
+  TYPES.forEach(function(t){
+    var dt=g[t+'dt']||0;
+    var isHigh=dt>DOWNTIME_THRESHOLD;
+    var color=isHigh?'#c03030':dt>3?'#a07010':'#2d7a2d';
+    var bg=isHigh?'#fef0f0':dt>3?'#fef9e8':'#e8f5e8';
+    html+='<div class="metric" style="background:'+bg+';border-color:'+(isHigh?'#f0b0b0':dt>3?'#f0d880':'#b0d8b0')+'">';
+    html+='<div class="label">'+t.toUpperCase()+'</div>';
+    html+='<div class="value" style="color:'+color+';">'+dt.toFixed(1)+'%</div>';
+    html+='<div class="sub" style="color:'+color+';font-weight:700;">'+(isHigh?'⚠ HIGH':'✓ OK')+'</div>';
+    html+='</div>';
+  });
+  document.getElementById('downtimeMetrics').innerHTML=html;
+  var prios=getActivePriorityOrder();
+  var podHtml='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">';
+  prios.forEach(function(p,i){
+    var isTop=i<2;
+    podHtml+='<div style="background:'+(isTop?'#fff0f0':'#f5f5f5')+';border:1px solid '+(isTop?'#f0b0b0':'#e0e0e0')+';border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;color:'+(isTop?'#c03030':'#888')+';"><span style="opacity:.5;">'+(i+1)+'.</span> '+p+'</div>';
+  });
+  podHtml+='</div>';
+  document.getElementById('priorityOrderDisplay').innerHTML=podHtml;
+}
+
+// ──────────── PRIORITY SELECTOR ────────────
+function renderPrioritySelector(){
+  var el=document.getElementById('prioritySelector');if(!el)return;
+  var html='';
+  PRIO_OPTIONS.forEach(function(opt){
+    var isSel=S.selectedPrios.indexOf(opt.id)>-1;
+    html+='<div class="prio-pill'+(isSel?' sel':'')+'" onclick="togglePrio(\''+opt.id+'\')">';
+    html+='<div class="check-box'+(isSel?' checked':'')+'">'+( isSel?'✓':'')+'</div>';
+    html+='<div>';
+    html+='<div style="font-size:13px;font-weight:'+(isSel?'700':'500')+';color:'+(isSel?'#1a2a1a':'#888')+';">'+opt.label+'</div>';
+    if(opt.bat&&isSel){
+      var cnt=S.global[opt.type]||0;
+      html+='<div style="font-size:11px;color:#2d7a2d;font-weight:600;">'+cnt+' tasks</div>';
+    }
+    html+='</div></div>';
+  });
+  el.innerHTML=html;
+  var note=document.getElementById('prioritySelectorNote');if(!note)return;
+  var batSel=S.selectedPrios.filter(function(p){return p.endsWith('_swap');});
+  if(S.selectedPrios.length===0){
+    note.innerHTML='<span style="color:#c03030;font-weight:600;">⚠ Select at least one task type</span>';
+  } else if(batSel.length===0){
+    note.innerHTML='<span style="color:#a07010;font-weight:600;">No battery types selected — drivers will carry 0 batteries</span>';
+  } else {
+    note.innerHTML='<span style="color:#2d7a2d;font-weight:600;">Battery load for: '+batSel.map(function(p){return p.replace('_swap','').toUpperCase();}).join(', ')+'</span>';
+  }
+}
+
+function togglePrio(id){
+  var idx=S.selectedPrios.indexOf(id);
+  if(idx>-1)S.selectedPrios.splice(idx,1);
+  else S.selectedPrios.push(id);
+  renderPrioritySelector();
+  renderDowntimePanel();
+}
+
+function getActivePriorityOrder(){
+  var g=S.global;
+  var highDt=[];
+  TYPES.forEach(function(t){if((g[t+'dt']||0)>DOWNTIME_THRESHOLD&&(g[t]||0)>0)highDt.push(t.toUpperCase()+' swap');});
+  // Use selected prios if set, otherwise auto from downtime
+  var batOrder=S.selectedPrios.filter(function(p){return p.endsWith('_swap');}).map(function(p){return p.replace('_swap','').toUpperCase()+' swap';});
+  var nonBat=S.selectedPrios.filter(function(p){return !p.endsWith('_swap');}).map(function(p){return p.charAt(0).toUpperCase()+p.slice(1);});
+  if(S.selectedPrios.length>0){
+    return batOrder.concat(nonBat).concat(['Rescue','Rebalance','Deploy'].filter(function(x){return nonBat.indexOf(x)<0;}));
+  }
+  if(highDt.length)return highDt.concat(['Rescue','Rebalance','IFQC','Deploy']);
+  return ['Rebalance','IFQC'].concat(TYPES.filter(function(t){return (g[t]||0)>0;}).map(function(t){return t.toUpperCase()+' swap';})).concat(['Rescue','Deploy']);
+}
+
+function getSelectedBatTypes(){
+  var sel=S.selectedPrios.filter(function(p){return p.endsWith('_swap');}).map(function(p){return p.replace('_swap','');});
+  if(sel.length===0)return TYPES; // if nothing selected use all
+  return sel;
+}
+
+// ──────────── STOCK ────────────
+function getReadyBatteries(round){
+  readInventoryFromUI();
+  var now=Date.now();
+  // Hub full mode — assume all charger slots ready
+  if(S.hubFull!==false&&!S.shiftStartTs){
+    var r={};TYPES.forEach(function(t){r[t]=S.inventory[t].chargers||0;});return r;
+  }
+  if(S.shiftStartTs){
+    var refTs=round===2&&S.round1Ts?S.round1Ts:S.shiftStartTs;
+    var hoursElapsed=(now-refTs)/3600000;
+    var r2={};
+    TYPES.forEach(function(t){
+      var inv=S.inventory[t];
+      var chargeH=inv.chargeH||6;
+      var inField=round===2?(S.round1Loads[t]||0):0;
+      var available=Math.min(inv.total-inField,inv.total);
+      var rdy=hoursElapsed>=chargeH?Math.min(inv.chargers,available):Math.floor((hoursElapsed/chargeH)*inv.chargers);
+      r2[t]=Math.max(0,Math.min(rdy,available));
+    });
+    return r2;
+  }
+  var r3={};TYPES.forEach(function(t){r3[t]=S.inventory[t].chargers||0;});return r3;
+}
+
+function renderInventoryRows(){
+  var tbody=document.getElementById('inventoryRows');if(!tbody)return;
+  var html='';
+  TYPES.forEach(function(t){
+    var inv=S.inventory[t];
+    html+='<tr>';
+    html+='<td style="font-weight:700;font-size:14px;">'+inv.label;
+    if(inv.isPrio)html+=' <span class="badge prio">priority</span>';
+    if(inv.isBike)html+=' <span class="badge bike">bike</span>';
+    if(t==='e5'||t==='el2')html+=' <span style="font-size:11px;color:#bbb;">shared battery</span>';
+    html+='</td>';
+    html+='<td class="center"><input type="number" id="inv-total-'+t+'" value="'+inv.total+'" min="0" style="width:80px;" oninput="persist();renderStockReady()"></td>';
+    html+='<td class="center"><input type="number" id="inv-chargers-'+t+'" value="'+inv.chargers+'" min="0" style="width:80px;" oninput="persist();renderHubStatusCard();renderStockReady()"></td>';
+    html+='<td class="center"><input type="number" id="inv-chargeh-'+t+'" value="'+inv.chargeH+'" min="1" step="0.5" style="width:80px;" oninput="persist();renderStockReady()"></td>';
+    html+='</tr>';
+  });
+  tbody.innerHTML=html;
+}
+
+function renderHubStatusCard(){
+  var titleEl=document.getElementById('hubStatusTitle');
+  var subEl=document.getElementById('hubStatusSub');
+  var btnFull=document.getElementById('hubBtnFull');
+  var btnAdj=document.getElementById('hubBtnAdjust');
+  if(titleEl)titleEl.textContent=S.hubFull!==false?'Hub is full':'Hub is partial';
+  if(subEl)subEl.textContent=S.hubFull!==false?'All charger slots assumed ready':'Adjusted values below';
+  if(btnFull){btnFull.className='hub-btn'+(S.hubFull!==false?' active':'');}
+  if(btnAdj){btnAdj.className='hub-btn'+(S.hubFull===false?' active':'');}
+  var ready=getReadyBatteries(1);
+  var html='';
+  TYPES.forEach(function(t){
+    var inv=S.inventory[t];
+    var r=ready[t];
+    var pct=inv.chargers>0?Math.min(100,Math.round((r/inv.chargers)*100)):0;
+    var color=pct>=90?'#2d7a2d':pct>50?'#a07010':'#c03030';
+    html+='<div class="metric">';
+    html+='<div class="label">'+inv.label+'</div>';
+    html+='<div class="value" style="color:'+color+';">'+r+'</div>';
+    html+='<div class="sub">of '+inv.chargers+' slots</div>';
+    html+='<div class="pct-bar"><div class="pct-fill" style="width:'+pct+'%;background:'+color+';"></div></div>';
+    html+='</div>';
+  });
+  var metricsEl=document.getElementById('hubReadyMetrics');
+  if(metricsEl)metricsEl.innerHTML=html;
+}
+
+function setHubFull(val){
+  S.hubFull=val;persist();
+  renderHubStatusCard();renderStockReady();
+}
+
+function renderStockReady(){
+  var el=document.getElementById('stockReadyPanel');if(!el)return;
+  var ready=getReadyBatteries(1);
+  var html='';
+  TYPES.forEach(function(t){
+    var inv=S.inventory[t];
+    var r=ready[t];
+    var pct=inv.chargers>0?Math.min(100,Math.round((r/inv.chargers)*100)):0;
+    var color=pct>=90?'#2d7a2d':pct>50?'#a07010':'#c03030';
+    html+='<div class="metric green-bg">';
+    html+='<div class="label">'+inv.label+'</div>';
+    html+='<div class="value">'+r+'</div>';
+    html+='<div class="sub">of '+inv.chargers+'</div>';
+    html+='<div class="pct-bar"><div class="pct-fill" style="width:'+pct+'%;background:'+color+';"></div></div>';
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+
+// Charge time
+function setChargeTimeNow(){
+  var now=new Date();
+  var h=String(now.getHours()).padStart(2,'0');
+  var m=String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('chargeStartTime').value=h+':'+m;
+  onChargeTimeInput();
+}
+function onChargeTimeInput(){
+  var val=document.getElementById('chargeStartTime').value;if(!val)return;
+  var parts=val.split(':');
+  var start=new Date();start.setHours(parseInt(parts[0]),parseInt(parts[1]),0,0);
+  if(start>new Date())start.setDate(start.getDate()-1);
+  S.shiftStartTs=start.getTime();persist();
+  var elapsed=((Date.now()-S.shiftStartTs)/3600000).toFixed(1);
+  var el=document.getElementById('chargeTimeStatus');if(el)el.textContent=elapsed+'h ago';
+  renderStockReady();renderHubStatusCard();
+}
+document.addEventListener('DOMContentLoaded',function(){
+  var cst=document.getElementById('chargeStartTime');
+  if(cst)cst.addEventListener('input',onChargeTimeInput);
+});
+function applyChargeTimeToUI(){
+  if(!S.shiftStartTs)return;
+  var d=new Date(S.shiftStartTs);
+  var inp=document.getElementById('chargeStartTime');
+  if(inp)inp.value=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  var elapsed=((Date.now()-S.shiftStartTs)/3600000).toFixed(1);
+  var el=document.getElementById('chargeTimeStatus');if(el)el.textContent=elapsed+'h ago';
+}
+
+// ──────────── LOAD CALC ────────────
+function getDriverTaskWeight(driverId){
+  var myZones=ZONES.filter(function(z){return S.assign[z]===driverId;});
+  var zones=myZones.length?myZones:ZONES;
+  var selBat=getSelectedBatTypes();
+  return zones.reduce(function(s,z){
+    var zt=S.zoneTasks[z]||{};
+    var batW=selBat.reduce(function(ss,t){return ss+(zt[t]||0)*1.5;},0);
+    var otherW=(zt.rescue||0)*0.8+(zt.rebalance||0)*0.5;
+    return s+batW+otherW;
+  },0);
+}
+
+function calcDriverLoad(driverId,readyStock){
+  var maxBat=parseInt(document.getElementById('s-max')?document.getElementById('s-max').value:S.maxBat)||40;
+  var maxBoxes=Math.floor(maxBat/4);
+  var myZones=ZONES.filter(function(z){return S.assign[z]===driverId;});
+  var zones=myZones.length?myZones:ZONES;
+  var selBat=getSelectedBatTypes();
+
+  var tasks={};
+  TYPES.forEach(function(t){tasks[t]=zones.reduce(function(s,z){return s+(S.zoneTasks[z][t]||0);},0);});
+  var taskRescue=zones.reduce(function(s,z){return s+(S.zoneTasks[z].rescue||0);},0);
+  var taskRebal=zones.reduce(function(s,z){return s+(S.zoneTasks[z].rebalance||0);},0);
+
+  // Weights — only selected battery types contribute
+  var weights={v4:0,v9:0,e5:0,el2:0};
+  selBat.forEach(function(t){weights[t]=(tasks[t]||0)*1.5;});
+  var wTotal=Object.values?Object.keys(weights).reduce(function(s,k){return s+weights[k];},0):weights.v4+weights.v9+weights.e5+weights.el2;
+
+  if(wTotal===0)return{v4:0,v9:0,e5:0,el2:0,total:0,boxes:0,tasks:tasks,taskRescue:taskRescue,taskRebal:taskRebal};
+
+  // Proportional allocation
+  var boxes=TYPES.map(function(t){return Math.round((weights[t]/wTotal)*maxBoxes);});
+
+  // Zero out non-selected types
+  TYPES.forEach(function(t,i){if(selBat.indexOf(t)<0||tasks[t]===0)boxes[i]=0;});
+
+  // Renormalise after zeroing
+  var activeWeights=TYPES.map(function(t){return selBat.indexOf(t)>-1&&tasks[t]>0?weights[t]:0;});
+  var aTotal=activeWeights.reduce(function(s,w){return s+w;},0);
+  if(aTotal>0){boxes=activeWeights.map(function(w){return Math.round((w/aTotal)*maxBoxes);});}
+  TYPES.forEach(function(t,i){if(selBat.indexOf(t)<0||tasks[t]===0)boxes[i]=0;});
+
+  // Stock cap only when shift time is set
+  if(readyStock&&S.shiftStartTs){
+    var totalW=S.drivers.reduce(function(s,d){return s+getDriverTaskWeight(d.id);},0)||1;
+    var myShare=getDriverTaskWeight(driverId)/totalW;
+    TYPES.forEach(function(t,i){
+      var cap=Math.floor(Math.floor((readyStock[t]||0)*myShare)/4);
+      boxes[i]=Math.min(boxes[i],cap);
+    });
+  }
+
+  // Fix rounding — give remaining boxes to highest-weight type
+  var used=boxes.reduce(function(a,b){return a+b;},0);
+  var slack=maxBoxes-used;
+  var order=TYPES.map(function(t,i){return{i:i,w:activeWeights[i]};}).filter(function(x){return x.w>0;}).sort(function(a,b){return b.w-a.w;});
+  var iter=0;
+  while(slack>0&&iter<40&&order.length){boxes[order[iter%order.length].i]++;slack--;iter++;}
+  while(slack<0&&iter<80&&order.length){if(boxes[order[(iter-40)%order.length].i]>0){boxes[order[(iter-40)%order.length].i]--;slack++;}iter++;}
+
+  var counts=boxes.map(function(b){return b*4;});
+  return{v4:counts[0],v9:counts[1],e5:counts[2],el2:counts[3],
+    total:counts.reduce(function(a,b){return a+b;},0),
+    boxes:boxes.reduce(function(a,b){return a+b;},0),
+    tasks:tasks,taskRescue:taskRescue,taskRebal:taskRebal};
+}
+
+// ──────────── ASSIGN ────────────
+function renderAssign(){
+  var el=document.getElementById('assignContent');if(!el)return;
+  if(!S.ready&&getTotalTasks()===0){el.innerHTML='<div class="alert warn">⚠ Enter task data in Setup first.</div>';return;}
+  if(!S.drivers.length){el.innerHTML='<div class="alert err">⚠ Add drivers in Setup first.</div>';return;}
+  var unassigned=ZONES.filter(function(z){return !S.assign[z];});
+  var html=unassigned.length
+    ?'<div class="alert warn">⚠ Unassigned zones: '+unassigned.join(', ')+'</div>'
+    :'<div class="alert ok">✓ All zones assigned.</div>';
+  var ready=getReadyBatteries(1);
+  S.drivers.forEach(function(d,i){
+    var bg=AVCOL[i%AVCOL.length][0],fg=AVCOL[i%AVCOL.length][1];
+    var ini=d.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+    var myZones=ZONES.filter(function(z){return S.assign[z]===d.id;});
+    var load=calcDriverLoad(d.id,ready);
+    var totalTasks=Object.keys(load.tasks).reduce(function(s,t){return s+(load.tasks[t]||0);},0)+load.taskRescue+load.taskRebal;
+    html+='<div class="dcard'+(myZones.length?'':' warn')+'">';
+    html+='<div class="dcard-header">';
+    html+='<div class="avatar" style="background:'+bg+';color:'+fg+';">'+ini+'</div>';
+    html+='<div style="flex:1;">';
+    html+='<div class="dcard-name">'+esc(d.name)+'</div>';
+    html+='<div class="dcard-sub">'+(myZones.length?myZones.join(', '):'No zones assigned')+'&nbsp;·&nbsp;'+totalTasks+' tasks</div>';
+    html+='</div>';
+    html+='<div style="text-align:right;"><div style="font-size:22px;font-weight:800;color:#2d7a2d;">'+load.total+'</div>';
+    html+='<div style="font-size:11px;color:#888;">'+load.boxes+' boxes</div></div>';
+    html+='</div>';
+    // Zone pills
+    html+='<div style="margin-bottom:10px;">';
+    ZONES.forEach(function(z){
+      var isOwn=S.assign[z]===d.id;
+      var isOther=S.assign[z]&&S.assign[z]!==d.id;
+      var zt=S.zoneTasks[z]||{};
+      var tot=(zt.v4||0)+(zt.v9||0)+(zt.e5||0)+(zt.el2||0)+(zt.rescue||0)+(zt.rebalance||0);
+      html+='<span class="zone-pill'+(isOwn?' sel':'')+(isOther?' other':'')+'" onclick="toggleZone('+d.id+',\''+z+'\')">';
+      html+=z.replace('Am Friedrichshain','Am.Fr.')+' <span style="font-size:10px;color:#bbb;">'+tot+'</span></span>';
+    });
+    html+='</div>';
+    // Load breakdown
+    html+='<div class="dcard-panel">';
+    html+='<div class="metric-grid c5" style="gap:6px;">';
+    [['V4',load.v4,load.tasks.v4,'#2a5aa0'],['V9',load.v9,load.tasks.v9,'#2a5aa0'],
+     ['E5',load.e5,load.tasks.e5,'#2d7a2d'],['EL2',load.el2,load.tasks.el2,'#2d7a2d'],['Total',load.total,'','']].forEach(function(c){
+      html+='<div style="text-align:center;">';
+      html+='<div style="font-size:11px;color:'+( c[3]||'#888')+';font-weight:700;text-transform:uppercase;margin-bottom:2px;">'+c[0]+'</div>';
+      html+='<div style="font-size:18px;font-weight:800;color:#1a2a1a;">'+c[1]+'</div>';
+      if(c[2]!=='')html+='<div style="font-size:10px;color:#bbb;">'+c[2]+'t</div>';
+      html+='</div>';
+    });
+    html+='</div></div></div>';
+  });
+  el.innerHTML=html;
+}
+
+function toggleZone(driverId,zone){
+  if(S.assign[zone]===driverId){delete S.assign[zone];}
+  else if(S.assign[zone]&&S.assign[zone]!==driverId){return;}
+  else{S.assign[zone]=driverId;}
+  persist();renderAssign();
+}
+
+// ──────────── BRIEFING ────────────
+function renderBriefing(){
+  var el=document.getElementById('briefingContent');if(!el)return;
+  if(!S.drivers.length){el.innerHTML='<div class="alert warn">Add drivers in Setup first.</div>';return;}
+  if(getTotalTasks()===0&&!S.ready){el.innerHTML='<div class="alert warn">Enter task data in Setup first.</div>';return;}
+  var shift=document.getElementById('s-shift')?document.getElementById('s-shift').value:S.shift;
+  var max=parseInt(document.getElementById('s-max')?document.getElementById('s-max').value:S.maxBat)||40;
+  var today=new Date().toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  var timeNow=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+  var sc=shift.includes('AM')?'am':shift.includes('PM')?'pm':'night';
+  var unassigned=ZONES.filter(function(z){return !S.assign[z];});
+  var noZone=S.drivers.filter(function(d){return !ZONES.some(function(z){return S.assign[z]===d.id;});});
+  var prios=getActivePriorityOrder();
+  var ready=getReadyBatteries(1);
+  var sep=Array(36).join('─');
+  var round1Loads={};
+  var fullMsg='SHIFT BRIEFING | '+shift+' | '+today+' '+timeNow+'\nHub: Alt-Stralau 68\n'+sep+'\n\nPRIORITY ORDER:\n'+prios.map(function(p,i){return (i+1)+'. '+p;}).join('\n')+'\n'+sep+'\n';
+
+  var html='';
+  if(noZone.length)html+='<div class="alert warn">⚠ '+noZone.map(function(d){return esc(d.name);}).join(', ')+' — no zones assigned.</div>';
+  if(unassigned.length)html+='<div class="alert info">ℹ Unassigned zones: '+unassigned.join(', ')+'</div>';
+
+  // Priority order card
+  html+='<div class="card green" style="margin-bottom:12px;">';
+  html+='<div class="sec-title" style="margin:0 0 8px;">Shift priority order</div>';
+  html+='<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+  prios.forEach(function(p,i){
+    var isTop=i<2;
+    html+='<div style="background:'+(isTop?'#fff0f0':'#f5f5f5')+';border:1px solid '+(isTop?'#f0b0b0':'#e0e0e0')+';border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;color:'+(isTop?'#c03030':'#888')+';">'+(i+1)+'. '+p+'</div>';
+  });
+  html+='</div></div>';
+
+  S.drivers.forEach(function(d,i){
+    var bg=AVCOL[i%AVCOL.length][0],fg=AVCOL[i%AVCOL.length][1];
+    var ini=d.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+    var load=calcDriverLoad(d.id,ready);
+    var myZones=ZONES.filter(function(z){return S.assign[z]===d.id;});
+    var hasZones=myZones.length>0;
+    round1Loads[d.id]={v4:load.v4,v9:load.v9,e5:load.e5,el2:load.el2};
+    fullMsg+='\n'+d.name+'\nZones: '+(hasZones?myZones.join(', '):'NOT ASSIGNED')+'\n';
+    fullMsg+='Load: V4='+load.v4+' V9='+load.v9+' E5='+load.e5+' EL2='+load.el2+' ('+load.total+' batteries)\n';
+    fullMsg+=prios.slice(0,4).map(function(p,i){return (i+1)+'. '+p;}).join('\n')+'\n';
+
+    html+='<div class="dcard'+(hasZones?'':' warn')+'">';
+    html+='<div class="dcard-header">';
+    html+='<div class="avatar" style="background:'+bg+';color:'+fg+';">'+ini+'</div>';
+    html+='<div style="flex:1;"><div class="dcard-name">'+esc(d.name)+'</div>';
+    html+='<div class="dcard-sub">'+(hasZones?myZones.join(', '):'No zones assigned')+'</div></div>';
+    html+='<span class="badge '+sc+'">'+shift+'</span></div>';
+
+    // Battery metrics
+    html+='<div class="metric-grid c5" style="margin-bottom:10px;">';
+    [['V4',load.v4],['V9',load.v9],['E5',load.e5],['EL2',load.el2],['Total',load.total]].forEach(function(item){
+      html+='<div class="metric'+(item[0]==='Total'?' green-bg':'')+'">';
+      html+='<div class="label">'+item[0]+'</div>';
+      html+='<div class="value">'+item[1]+'</div>';
+      html+='</div>';
+    });
+    html+='</div>';
+
+    // Task priority
+    html+='<div class="dcard-panel">';
+    html+='<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Task priority — '+esc(myZones.join(', ')||'All zones')+'</div>';
+    var zTasks={v4:load.tasks.v4||0,v9:load.tasks.v9||0,e5:load.tasks.e5||0,el2:load.tasks.el2||0,rescue:load.taskRescue||0,rebalance:load.taskRebal||0};
+    prios.forEach(function(p,pidx){
+      var cnt=0;
+      if(p.endsWith('V4 swap'))cnt=zTasks.v4;
+      else if(p.endsWith('V9 swap'))cnt=zTasks.v9;
+      else if(p.endsWith('E5 swap'))cnt=zTasks.e5;
+      else if(p.endsWith('EL2 swap'))cnt=zTasks.el2;
+      else if(p==='Rescue')cnt=zTasks.rescue;
+      else if(p==='Rebalance')cnt=zTasks.rebalance;
+      if(cnt>0||pidx<2){
+        html+='<div class="task-row">';
+        html+='<span style="font-weight:'+(pidx<2?'700':'500')+';color:'+(pidx<2?'#1a2a1a':'#888')+';">'+(pidx+1)+'. '+p+'</span>';
+        if(cnt>0)html+='<span class="task-num '+(pidx<2?'high':'normal')+'">'+cnt+' tasks</span>';
+        html+='</div>';
+      }
+    });
+    html+='</div>';
+    html+='<div style="font-size:12px;color:#bbb;margin-top:8px;">'+load.boxes+' boxes · max '+max+' bat. · restock at hub mid-shift</div>';
+    html+='</div>';
+  });
+
+  fullMsg+='\n'+sep+'\nRestock at hub mid-shift\nRound 2 briefing on return\nQuestions → Kristian';
+  var uid='b'+Date.now();
+  html+='<div class="card" style="margin-top:12px;">';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">';
+  html+='<span style="font-size:13px;font-weight:600;color:#888;">Discord / WhatsApp message</span>';
+  html+='<button class="btn" id="copybtn-'+uid+'" onclick="doCopy(\''+uid+'\')" style="font-size:13px;"><span>📋</span> Copy</button>';
+  html+='</div>';
+  html+='<div class="msg-box" id="'+uid+'">'+esc(fullMsg)+'</div></div>';
+  html+='<button class="btn primary btn-full" style="margin-top:12px;" onclick="saveBriefing(\''+uid+'\',1,'+JSON.stringify(round1Loads)+')">💾 Save &amp; start shift clock</button>';
+  el.innerHTML=html;
+}
+
+// ──────────── ROUND 2 ────────────
+function renderRound2(){
+  var el=document.getElementById('round2Content');if(!el)return;
+  if(!S.round1Ts){
+    el.innerHTML='<div class="alert info">ℹ No Round 1 saved yet. Generate and save a briefing first.</div>';
+    el.innerHTML+='<div class="sec-title">Upload updated Steep report</div>';
+    el.innerHTML+='<div class="drop-zone" id="r2Drop" onclick="document.getElementById(\'r2pdf\').click()">↑ Upload latest Steep PDFs (hourly from Slack)<input type="file" id="r2pdf" accept=".pdf" multiple style="display:none;" onchange="handleFiles(this.files)"></div>';
+    return;
+  }
+  var elapsed=((Date.now()-S.round1Ts)/3600000).toFixed(1);
+  var ready=getReadyBatteries(2);
+  var shift=S.shift;
+  var sc=shift.includes('AM')?'am':shift.includes('PM')?'pm':'night';
+  var today=new Date().toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  var timeNow=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+
+  var html='<div class="alert ok">↺ Round 2 · '+elapsed+'h since Round 1 departed</div>';
+
+  html+='<div class="sec-title">Upload updated Steep report</div>';
+  html+='<div class="drop-zone" id="r2Drop" onclick="document.getElementById(\'r2pdf\').click()" style="margin-bottom:14px;">↑ Upload latest Steep PDFs<input type="file" id="r2pdf" accept=".pdf" multiple style="display:none;" onchange="handleFiles(this.files)"></div>';
+
+  html+='<div class="sec-title">Batteries ready now (auto)</div>';
+  html+='<div class="metric-grid c4" style="margin-bottom:14px;">';
+  TYPES.forEach(function(t){
+    var inv=S.inventory[t];var r=ready[t];
+    var color=r>20?'#2d7a2d':r>8?'#a07010':'#c03030';
+    html+='<div class="metric"><div class="label">'+inv.label+'</div><div class="value" style="color:'+color+';">'+r+'</div><div class="sub">ready</div></div>';
+  });
+  html+='</div>';
+
+  html+='<div class="sec-title">Batteries left in van (optional)</div>';
+  html+='<div class="card" style="padding:12px 16px;">';
+  S.drivers.forEach(function(d){
+    html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">';
+    html+='<span style="min-width:110px;font-size:13px;font-weight:600;color:#1a2a1a;">'+esc(d.name)+'</span>';
+    TYPES.forEach(function(t){
+      html+='<div style="display:flex;align-items:center;gap:4px;">';
+      html+='<span style="font-size:11px;color:#888;font-weight:700;">'+t.toUpperCase()+'</span>';
+      html+='<input type="number" id="r2left-'+d.id+'-'+t+'" value="0" min="0" style="width:52px;font-size:13px;">';
+      html+='</div>';
+    });
+    html+='</div>';
+  });
+  html+='</div>';
+
+  html+='<button class="btn primary btn-full" onclick="generateRound2()">Calculate Round 2 load-out</button>';
+  html+='<div id="r2Result" style="margin-top:14px;"></div>';
+  el.innerHTML=html;
+
+  // Drag drop for r2
+  var dz=document.getElementById('r2Drop');
+  if(dz){
+    dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag');});
+    dz.addEventListener('dragleave',function(){dz.classList.remove('drag');});
+    dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('drag');handleFiles(e.dataTransfer.files);});
+  }
+}
+
+function generateRound2(){
+  var ready=getReadyBatteries(2);
+  var shift=S.shift;
+  var sc=shift.includes('AM')?'am':shift.includes('PM')?'pm':'night';
+  var today=new Date().toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  var timeNow=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+  var sep=Array(36).join('─');
+  var prios=getActivePriorityOrder();
+  var fullMsg='ROUND 2 | '+shift+' | '+today+' '+timeNow+'\nHub: Alt-Stralau 68\n'+sep+'\n';
+  var html='';
+
+  S.drivers.forEach(function(d,i){
+    var bg=AVCOL[i%AVCOL.length][0],fg=AVCOL[i%AVCOL.length][1];
+    var ini=d.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+    var myZones=ZONES.filter(function(z){return S.assign[z]===d.id;});
+    var leftInVan={};
+    TYPES.forEach(function(t){
+      var inp=document.getElementById('r2left-'+d.id+'-'+t);
+      leftInVan[t]=inp?parseInt(inp.value)||0:0;
+    });
+    var adjustedReady={};
+    TYPES.forEach(function(t){adjustedReady[t]=Math.max(0,(ready[t]||0)-leftInVan[t]);});
+    var load=calcDriverLoad(d.id,adjustedReady);
+    var refill={};
+    TYPES.forEach(function(t){refill[t]=Math.max(0,(load[t]||0)-(leftInVan[t]||0));});
+    var refillTotal=TYPES.reduce(function(s,t){return s+(refill[t]||0);},0);
+    fullMsg+='\n'+d.name+'\nLeft in van: V4='+leftInVan.v4+' V9='+leftInVan.v9+' E5='+leftInVan.e5+' EL2='+leftInVan.el2+'\n';
+    fullMsg+='Refill: V4='+refill.v4+' V9='+refill.v9+' E5='+refill.e5+' EL2='+refill.el2+' ('+refillTotal+' bat.)\n';
+
+    html+='<div class="dcard r2">';
+    html+='<div class="dcard-header">';
+    html+='<div class="avatar" style="background:'+bg+';color:'+fg+';">'+ini+'</div>';
+    html+='<div style="flex:1;"><div class="dcard-name">'+esc(d.name)+'</div>';
+    html+='<div class="dcard-sub">'+(myZones.length?myZones.join(', '):'All zones')+'</div></div>';
+    html+='<span class="badge r2">Round 2</span></div>';
+    // Refill
+    html+='<div class="card green" style="margin-bottom:8px;padding:10px 14px;">';
+    html+='<div style="font-size:11px;font-weight:700;color:#2d7a2d;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Pick up from hub</div>';
+    html+='<div class="metric-grid c5">';
+    [['V4',refill.v4,'#2a5aa0'],['V9',refill.v9,'#2a5aa0'],['E5',refill.e5,'#2d7a2d'],['EL2',refill.el2,'#2d7a2d'],['Total',refillTotal,'#1a2a1a']].forEach(function(c){
+      html+='<div style="text-align:center;"><div style="font-size:11px;color:'+c[2]+';font-weight:700;margin-bottom:2px;">'+c[0]+'</div>';
+      html+='<div style="font-size:20px;font-weight:800;color:'+c[2]+';">'+c[1]+'</div></div>';
+    });
+    html+='</div></div>';
+    // Full van after refill
+    html+='<div style="font-size:11px;color:#888;font-weight:600;margin-bottom:6px;">Full van after refill</div>';
+    html+='<div class="metric-grid c5">';
+    [['V4',load.v4],['V9',load.v9],['E5',load.e5],['EL2',load.el2],['Total',load.total]].forEach(function(item){
+      html+='<div class="metric"><div class="label">'+item[0]+'</div><div class="value">'+item[1]+'</div></div>';
+    });
+    html+='</div></div>';
+  });
+  fullMsg+='\n'+sep+'\nPriority: '+prios.slice(0,2).join(' → ')+'\nQuestions → Kristian';
+  var uid='r2'+Date.now();
+  html+='<div class="card" style="margin-top:12px;">';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">';
+  html+='<span style="font-size:13px;font-weight:600;color:#888;">Round 2 message</span>';
+  html+='<button class="btn" id="copybtn-'+uid+'" onclick="doCopy(\''+uid+'\')">📋 Copy</button>';
+  html+='</div><div class="msg-box" id="'+uid+'">'+esc(fullMsg)+'</div></div>';
+  html+='<button class="btn primary btn-full" style="margin-top:12px;" onclick="saveBriefing(\''+uid+'\',2,null)">💾 Save Round 2</button>';
+  document.getElementById('r2Result').innerHTML=html;
+}
+
+// ──────────── COPY & SAVE ────────────
+function doCopy(uid){
+  var el=document.getElementById(uid);if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(function(){
+    var btn=document.getElementById('copybtn-'+uid);
+    if(btn){btn.textContent='✓ Copied!';btn.style.color='#2d7a2d';setTimeout(function(){btn.innerHTML='📋 Copy';btn.style.color='';},2000);}
+  });
+}
+
+function saveBriefing(msgId,round,loads){
+  var msg=document.getElementById(msgId)?document.getElementById(msgId).textContent:'';
+  var shift=document.getElementById('s-shift')?document.getElementById('s-shift').value:S.shift;
+  var now=Date.now();
+  if(round===1){S.shiftStartTs=now;S.round1Ts=now;if(loads){var lk=Object.keys(loads);S.round1Loads={};lk.forEach(function(k){var l=loads[k];S.round1Loads.v4=(S.round1Loads.v4||0)+(l.v4||0);S.round1Loads.v9=(S.round1Loads.v9||0)+(l.v9||0);S.round1Loads.e5=(S.round1Loads.e5||0)+(l.e5||0);S.round1Loads.el2=(S.round1Loads.el2||0)+(l.el2||0);});}persist();}
+  var record={id:now,ts:new Date().toISOString(),shift:shift,round:round,msg:msg,
+    global:JSON.parse(JSON.stringify(S.global)),
+    zoneTasks:JSON.parse(JSON.stringify(S.zoneTasks)),
+    drivers:S.drivers.map(function(d){var ready=getReadyBatteries(round);return{name:d.name,zones:ZONES.filter(function(z){return S.assign[z]===d.id;}),load:calcDriverLoad(d.id,ready)};})};
+  var h=[];try{h=JSON.parse(localStorage.getItem(SK+'_hist')||'[]');}catch(e){}
+  h.unshift(record);if(h.length>80)h=h.slice(0,80);
+  try{localStorage.setItem(SK+'_hist',JSON.stringify(h));}catch(e){}
+  var btn=event.target.closest('button');
+  if(btn){btn.textContent=round===1?'✓ Saved! Clock started':'✓ Saved!';btn.style.background='#2d7a2d';
+    setTimeout(function(){btn.textContent=round===1?'💾 Save & start shift clock':'💾 Save Round 2';btn.style.background='';},2500);}
+}
+
+// ──────────── HISTORY ────────────
+function renderHistory(){
+  var h=[];try{h=JSON.parse(localStorage.getItem(SK+'_hist')||'[]');}catch(e){}
+  document.getElementById('histCount').textContent=h.length?h.length+' briefing'+(h.length!==1?'s':'')+' saved':'No briefings saved';
+  if(!h.length){document.getElementById('histList').innerHTML='';return;}
+  var html='';
+  h.forEach(function(r,i){
+    var d=new Date(r.ts);
+    var ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+    var ts=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    var sc=r.shift&&r.shift.includes('AM')?'am':r.shift&&r.shift.includes('PM')?'pm':'night';
+    var isR2=r.round===2;
+    html+='<div class="hist-item">';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;">';
+    html+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
+    html+='<span class="badge '+(isR2?'r2':sc)+'">'+(isR2?'Round 2':r.shift||'Shift')+'</span>';
+    html+='<span style="font-size:13px;font-weight:600;color:#333;">'+ds+' '+ts+'</span>';
+    html+='<span style="font-size:12px;color:#888;">'+(r.drivers||[]).length+' drivers</span>';
+    html+='</div>';
+    html+='<div style="display:flex;gap:6px;">';
+    html+='<button class="btn" onclick="toggleHist('+i+')" style="font-size:12px;padding:5px 10px;">👁 View</button>';
+    html+='<button class="btn danger" onclick="delHist('+i+')" style="font-size:12px;padding:5px 10px;">✕</button>';
+    html+='</div></div>';
+    html+='<div id="hd-'+i+'" style="display:none;margin-top:10px;">';
+    (r.drivers||[]).forEach(function(d){
+      html+='<div style="font-size:13px;padding:5px 0;border-bottom:1px solid #f0f4f0;color:#333;">';
+      html+='<strong style="color:#1a2a1a;">'+esc(d.name)+'</strong>';
+      html+=' · '+(d.zones&&d.zones.length?d.zones.join(', '):'All zones');
+      html+=' · <span style="color:#2a5aa0;font-weight:700;">V4:'+(d.load&&d.load.v4||0)+' V9:'+(d.load&&d.load.v9||0)+'</span>';
+      html+=' · <span style="color:#2d7a2d;font-weight:700;">E5:'+(d.load&&d.load.e5||0)+' EL2:'+(d.load&&d.load.el2||0)+'</span>';
+      html+=' · <strong style="color:#2d7a2d;">'+(d.load&&d.load.total||0)+' bat.</strong></div>';
+    });
+    html+='<div class="msg-box" id="hpre-'+i+'" style="margin:10px 0 8px;font-size:11px;">'+esc(r.msg)+'</div>';
+    html+='<button class="btn" onclick="navigator.clipboard.writeText(document.getElementById(\'hpre-'+i+'\').textContent)" style="font-size:12px;">📋 Copy</button>';
+    html+='</div></div>';
+  });
+  document.getElementById('histList').innerHTML=html;
+}
+
+function toggleHist(i){var el=document.getElementById('hd-'+i);el.style.display=el.style.display==='none'?'block':'none';}
+function delHist(i){var h=[];try{h=JSON.parse(localStorage.getItem(SK+'_hist')||'[]');}catch(e){}h.splice(i,1);try{localStorage.setItem(SK+'_hist',JSON.stringify(h));}catch(e){}renderHistory();}
+function clearHist(){try{localStorage.removeItem(SK+'_hist');}catch(e){}renderHistory();}
+
+// ──────────── PDF PARSING ────────────
+async function handleFiles(files){
+  if(!files||!files.length)return;
+  var statusEl=document.getElementById('parseStatus');
+  if(statusEl)statusEl.textContent='Reading PDFs...';
+  // Reset zone tasks before parsing fresh
+  ZONES.forEach(function(z){S.zoneTasks[z]={v4:0,v9:0,e5:0,el2:0,rescue:0,rebalance:0};});
+  S.global={v4:0,v9:0,e5:0,el2:0,v4dt:0,v9dt:0,e5dt:0,el2dt:0};
+  for(var i=0;i<files.length;i++){
+    var ab=await files[i].arrayBuffer();
+    var pdf=await pdfjsLib.getDocument({data:ab}).promise;
+    // Extract tokens with position data for zone parsing
+    var tokens=[];
+    for(var p=1;p<=pdf.numPages;p++){
+      var pg=await pdf.getPage(p);
+      var tc=await pg.getTextContent();
+      tc.items.forEach(function(item){
+        tokens.push({str:item.str.trim(),x:Math.round(item.transform[4]),y:Math.round(item.transform[5])});
+      });
+    }
+    var txt=tokens.map(function(t){return t.str;}).join(' ');
+    parseFile(txt,tokens,files[i].name);
+  }
+  S.ready=true;persist();
+  var parsed=ZONES.some(function(z){return S.zoneTasks[z].v4>0||S.zoneTasks[z].v9>0;});
+  if(statusEl)statusEl.textContent=parsed?'✓ Parsed zone data. Review below.':'⚠ Parsed globals only — adjust zones manually.';
+  renderZoneTable();renderGlobalMetrics();renderDowntimePanel();renderPrioritySelector();
+}
+
+function parseFile(txt,tokens,filename){
+  var isScooter=filename.toLowerCase().indexOf('scooter')>-1||txt.indexOf('Voiager')>-1;
+  var isBike=filename.toLowerCase().indexOf('bike')>-1||txt.indexOf('Explorer 5')>-1||txt.indexOf('Explorer Light')>-1;
+
+  // ── Extract downtime percentages ──
+  // Pattern: "% Downtime" near a model name and a float%
+  var dtPatterns={
+    v4:[/7\.\d+(?=%)/,/LIVE.*?V4.*?([\d]+\.[\d]+)%/s,/V4.*?([\d]+\.[\d]+)%/],
+    v9:[/5\.\d+(?=%)/,/LIVE.*?V9.*?([\d]+\.[\d]+)%/s,/V9.*?([\d]+\.[\d]+)%/],
+    e5:[/5\.4[\d]*(?=%)/,/E5.*?([\d]+\.[\d]+)%/],
+    el2:[/8\.1[\d]*(?=%)/,/EL2.*?([\d]+\.[\d]+)%/]
+  };
+  // Try to extract downtime from Live Downtime section
+  var liveSection=txt.match(/\[Live\].*?% Downtime[\s\S]{0,500}/i);
+  var dtSource=liveSection?liveSection[0]:txt;
+  // Extract all floats near % in the live section
+  var allFloats=dtSource.match(/[\d]+\.[\d]+(?=%)/g)||[];
+
+  if(isScooter){
+    // Downtime
+    var v4m=txt.match(/7\.51/)||txt.match(/LIVE.*?% Downtime.*?V4[\s\S]{0,100}?([\d]+\.[\d]+)%/i);
+    S.global.v4dt=v4m?parseFloat(v4m[0]||v4m[1]):( allFloats[0]?parseFloat(allFloats[0]):0);
+    var v9m=txt.match(/5\.11/)||txt.match(/LIVE.*?% Downtime.*?V9[\s\S]{0,100}?([\d]+\.[\d]+)%/i);
+    S.global.v9dt=v9m?parseFloat(v9m[0]||v9m[1]):( allFloats[1]?parseFloat(allFloats[1]):0);
+
+    // Parse zone-level battery_swap from "Open Task Vehicles - V4 (Bounty)" and V9 tables
+    parseZoneTable(txt,'v4','V4');
+    parseZoneTable(txt,'v9','V9');
+    // Also parse rescue from zone by zone table
+    parseZoneRescue(txt);
+    // Global totals from zone sums
+    S.global.v4=ZONES.reduce(function(s,z){return s+(S.zoneTasks[z].v4||0);},0);
+    S.global.v9=ZONES.reduce(function(s,z){return s+(S.zoneTasks[z].v9||0);},0);
+  }
+  if(isBike){
+    var e5m=txt.match(/5\.42/);
+    S.global.e5dt=e5m?5.42:0;
+    var el2m=txt.match(/8\.12/);
+    S.global.el2dt=el2m?8.12:0;
+    parseZoneTable(txt,'e5','E5');
+    parseZoneTable(txt,'el2','EL2');
+    S.global.e5=ZONES.reduce(function(s,z){return s+(S.zoneTasks[z].e5||0);},0);
+    S.global.el2=ZONES.reduce(function(s,z){return s+(S.zoneTasks[z].el2||0);},0);
+  }
+}
+
+// Zone short names as they appear in Steep
+var ZONE_STEEP={
+  'Am Friedrichshain':['Am Friedrichshain','TREL Am Friedrichshain','Am Friedrichsh'],
+  'Britz':['Britz','TREL Britz'],
+  'Hellersdorf':['Hellersdorf','TREL Hellersdorf'],
+  'Neukölln':['Neukölln','TREL Neukölln','Neukolln','TREL Neukolln'],
+  'Ostbahnhof':['Ostbahnhof','TREL Ostbahnhof'],
+  'Rummelsburg':['Rummelsburg','TREL Rummelsburg'],
+  'Treptow':['Treptow','TREL Treptow']
+};
+
+function parseZoneTable(txt,type,modelName){
+  // Find the section "Open Task Vehicles - V4/V9/E5/EL2 (Bounty)"
+  // Then extract rows: "TREL ZoneName  num  num  ...  Total"
+  var sectionRe=new RegExp('Open Task Vehicles[\s\S]*?'+modelName+'[\s\S]{0,50}?Bounty[\s\S]{0,2000}?Total\s+\d+','i');
+  var section=txt.match(sectionRe);
+  if(!section)return;
+  var sectionTxt=section[0];
+
+  ZONES.forEach(function(zone){
+    var aliases=ZONE_STEEP[zone]||[zone];
+    var found=false;
+    aliases.forEach(function(alias){
+      if(found)return;
+      // Look for alias followed by numbers, take first number as battery_swap count
+      var re=new RegExp(alias.replace(/[öÖ]/g,'[öoÖO]')+'\s+([\d\s]+?)(?=TREL|Total|$)','i');
+      var m=sectionTxt.match(re);
+      if(m){
+        var nums=m[1].trim().split(/\s+/).map(Number).filter(function(n){return !isNaN(n)&&n>=0&&n<1000;});
+        if(nums.length>0){
+          // First number is battery_swap count
+          S.zoneTasks[zone][type]=(S.zoneTasks[zone][type]||0)+( nums[0]||0);
+          found=true;
+        }
+      }
+    });
+  });
+}
+
+function parseZoneRescue(txt){
+  // Find the "Open Task Vehicles - by Zone" section which has rescue column
+  var sectionRe=/Open Task Vehicles[\s\S]{0,100}?by Zone[\s\S]{0,3000}?Total\s+\d+/i;
+  var section=txt.match(sectionRe);
+  if(!section)return;
+  var sectionTxt=section[0];
+  ZONES.forEach(function(zone){
+    var aliases=ZONE_STEEP[zone]||[zone];
+    aliases.forEach(function(alias){
+      var re=new RegExp(alias.replace(/[öÖ]/g,'[öoÖO]')+'\s+([\d\s]+?)(?=TREL|Total)','i');
+      var m=sectionTxt.match(re);
+      if(m){
+        var nums=m[1].trim().split(/\s+/).map(Number).filter(function(n){return !isNaN(n)&&n>=0&&n<500;});
+        // In by-zone table: cols are battery_swap, ..., rescue, transport, Total
+        // rescue is typically 2nd-to-last before Total
+        if(nums.length>=3){
+          var rescueIdx=nums.length-2;
+          S.zoneTasks[zone].rescue=Math.max(S.zoneTasks[zone].rescue||0,nums[rescueIdx]||0);
+        }
+      }
+    });
+  });
+}
+
+// ──────────── DRAG DROP ────────────
+var dz=document.getElementById('dropZone');
+dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',function(){dz.classList.remove('drag');});
+dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('drag');handleFiles(e.dataTransfer.files);});
+
+// ──────────── INIT ────────────
+loadState();
+applyStateToUI();
+renderDriverList();
+renderZoneTable();
+renderGlobalMetrics();
+renderDowntimePanel();
+renderPrioritySelector();
+renderInventoryRows();
+renderHubStatusCard();
+renderStockReady();
+startClock();
+</script>
+</body>
+</html>
